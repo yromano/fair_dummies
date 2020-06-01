@@ -3,7 +3,7 @@
 
 * [Communities and Crimes](http://archive.ics.uci.edu/ml/datasets/communities+and+crime): UCI Communities   and   crime   data   set.
 
-* [Nursery](https://archive.ics.uci.edu/ml/datasets/nursery): UCI Nursery data set.
+* [Nursery](https://archive.ics.uci.edu/ml/datasets/nursery): UCI Nursery data set. Run clean_nursery_dataset.ipynb to clean the data set.
 
 ### Data subject to copyright/usage rules
 
