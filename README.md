@@ -8,10 +8,6 @@ Lastly, we demonstrate how to incorporate techniques for equitable uncertainty q
 
 [1] Y. Romano, S. Bates, and E. J. Candès, “Achieving Equalized Odds by Resampling Sensitive Attributes.” 2020.
 
-[2] Y. Romano, E. Patterson, and E. J. Candès, [“Conformalized quantile regression.”](https://arxiv.org/abs/1905.03222) 2019.
-
-[3] Y. Romano, R. F. Barber, C. Sabbatti and E. J. Candès, [“With malice towards none: Assessing uncertainty via equalized coverage.”](https://statweb.stanford.edu/~candes/papers/EqualizedCoverage.pdf) 2019.
-
 ## Getting Started
 
 The implementation of [1] is self-contained and written in python.
@@ -20,7 +16,13 @@ Part of the code is a taken from:
 * Conformalized quantile regression (CQR) [2] and equalized coverage [3] frameworks for constructing distribusion-free prediction intervals/sets. Code is avaialable at https://github.com/yromano/cqr
 * nonconformist package available at https://github.com/donlnz/nonconformist
 * We compare Fair Dummies to Adversarial Debiasing [4]; our implementation is based on https://github.com/equialgo/fairness-in-ml
-* We compare Fair Dummies to HGR [5], where our code is based on https://github.com/equialgo/fairness-in-ml
+* We compare Fair Dummies to HGR [5], where our code is based on https://github.com/criteo-research/continuous-fairness
+
+
+[2] Y. Romano, E. Patterson, and E. J. Candès, [“Conformalized quantile regression.”](https://arxiv.org/abs/1905.03222) NeurIPS 2019.
+[3] Y. Romano, R. F. Barber, C. Sabbatti and E. J. Candès, [“With malice towards none: Assessing uncertainty via equalized coverage.”](https://statweb.stanford.edu/~candes/papers/EqualizedCoverage.pdf) HDSR 2019.
+[4] B. H. Zhang, B. Lemoine, and M. Mitchell, ["Mitigating unwanted biases with adversarial learning."](https://dl.acm.org/doi/abs/10.1145/3278721.3278779) In Proceedings of the 2018 AAAI/ACM Conference on AI, Ethics, and Society, pp. 335-340, 2018.
+[5] J. Mary, C. Calauzènes, and N. El Karoui, ["Fairness-aware learning for continuous attributes and treatments."](http://proceedings.mlr.press/v97/mary19a/mary19a.pdf) ICML, 2019
 
 ### Prerequisites
 
@@ -41,8 +43,6 @@ git clone https://github.com/yromano/fair_dummies.git
 
 ## Usage
 
-### CQR
-
 Please refer to [synthetic_experiment.ipynb](synthetic_experiment.ipynb) for basic usage. Comparisons to competitive methods and additional usage examples of this package can be found in [all_classification_experiments.py](all_classification_experiments.py) and [all_regression_experiments.py](all_regression_experiments.py).
 
 ## Reproducible Research
@@ -53,7 +53,7 @@ The code available under synthetic_experiment.ipynb,  all_classification_experim
 
 * [Communities and Crimes](http://archive.ics.uci.edu/ml/datasets/communities+and+crime): UCI Communities   and   crime   data   set.
 
-* [Nursery](https://archive.ics.uci.edu/ml/datasets/nursery): UCI Nursery data   set.
+* [Nursery](https://archive.ics.uci.edu/ml/datasets/nursery): UCI Nursery data set.
 
 ### Data subject to copyright/usage rules
 
