@@ -1,13 +1,15 @@
 # Fair Dummies: Achieving Equalized Odds by Resampling Sensitive Attributes
 
-This package implements ``Fair Dummies'': a flexible framework [1] for learning predictive models that approximately satisfy the equalized odds notion of fairness. This is achieved by introducing a general discrepancy function that rigorously quantifies violations of this criterion, formulating a differentiable penalty that drives the model parameters towards equalized odds.
+This package implements "Fair Dummies": a flexible framework [1] for learning predictive models that approximately satisfy the equalized odds notion of fairness. This is achieved by introducing a general discrepancy function that rigorously quantifies violations of this criterion, formulating a differentiable penalty that drives the model parameters towards equalized odds.
 
 To rigorously evaluate fitted models, we also implement a formal hypothesis test to detect when a prediction rule violates the equalized odds property. Both the model fitting and hypothesis testing leverage a resampled version of the sensitive attribute obeying the equalized odds property by construction.
 
 Lastly, we demonstrate how to incorporate techniques for equitable uncertainty quantification---unbiased for each protected group---to precisely communicate the results of the data analysis.
 
 [1] Y. Romano, S. Bates, and E. J. Candès, “Achieving Equalized Odds by Resampling Sensitive Attributes.” 2020.
+
 [2] Y. Romano, E. Patterson, and E. J. Candès, [“Conformalized quantile regression.”](https://arxiv.org/abs/1905.03222) 2019.
+
 [3] Y. Romano, R. F. Barber, C. Sabbatti and E. J. Candès, [“With malice towards none: Assessing uncertainty via equalized coverage.”](https://statweb.stanford.edu/~candes/papers/EqualizedCoverage.pdf) 2019.
 
 ## Getting Started
