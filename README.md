@@ -15,8 +15,8 @@ The implementation of [1] is self-contained and written in python.
 Part of the code is a taken from:
 * Conformalized quantile regression (CQR) [2] and equalized coverage [3] frameworks for constructing distribusion-free prediction intervals/sets. Code is avaialable at https://github.com/yromano/cqr
 * nonconformist package available at https://github.com/donlnz/nonconformist
-* We compare Fair Dummies to Adversarial Debiasing [4]; our implementation is based on https://github.com/equialgo/fairness-in-ml
-* We compare Fair Dummies to HGR [5], where our code is based on https://github.com/criteo-research/continuous-fairness
+* Adversarial Debiasing [4]: our implementation is based on https://github.com/equialgo/fairness-in-ml
+* HGR [5]: where our code is based on https://github.com/criteo-research/continuous-fairness
 
 
 [2] Y. Romano, E. Patterson, and E. J. Candès, [“Conformalized quantile regression.”](https://arxiv.org/abs/1905.03222) NeurIPS 2019.
