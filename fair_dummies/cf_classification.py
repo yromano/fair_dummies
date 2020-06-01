@@ -1,6 +1,5 @@
 # We rely on the nonconformist package and CQR package, available at
 # https://github.com/donlnz/nonconformist
-# https://github.com/donlnz/nonconformist
 # https://github.com/yromano/cqr
 
 import os
