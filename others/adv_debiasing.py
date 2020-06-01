@@ -1,7 +1,7 @@
 
 # Code is taken from https://github.com/equialgo/fairness-in-ml
 # Original implementation is modified to handle regression and multi-class 
-# classification problems, as well as handling the equalized odds requirement
+# classification problems
 
 import numpy as np
 import pandas as pd
