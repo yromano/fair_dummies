@@ -14,7 +14,9 @@ The implementation of [1] is self-contained and written in python.
 
 ## Usage
 
-Please refer to [synthetic_experiment.ipynb](synthetic_experiment.ipynb) for basic usage. Comparisons to competitive methods and additional usage examples of this package can be found in [all_classification_experiments.py](all_classification_experiments.py) and [all_regression_experiments.py](all_regression_experiments.py).
+Please refer to [synthetic_experiment.ipynb](synthetic_experiment.ipynb) for basic usage. The notebooks [real_classification_experiment.ipynb](real_classification_experiment.ipynb) and [real_regression_experiment.ipynb](real_regression_experiment.ipynb) demonstrate how to use the software package on real data.
+
+Comparisons to competitive methods and additional usage examples of this package can be found in [all_classification_experiments.py](all_classification_experiments.py) and [all_regression_experiments.py](all_regression_experiments.py).
 
 ## Further information and dependencies
 
