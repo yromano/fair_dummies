@@ -1,3 +1,6 @@
 [submodule "cqr"]
 	path = cqr
 	url = https://github.com/yromano/cqr
+[submodule "others/third_party/cqr"]
+	path = others/third_party/cqr
+	url = https://github.com/yromano/cqr
