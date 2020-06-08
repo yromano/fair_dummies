@@ -12,7 +12,13 @@ Lastly, we demonstrate how to incorporate techniques for equitable uncertainty q
 
 The implementation of [1] is self-contained and written in python.
 
-This package also implemets (see dependencies):
+## Usage
+
+Please refer to [synthetic_experiment.ipynb](synthetic_experiment.ipynb) for basic usage. Comparisons to competitive methods and additional usage examples of this package can be found in [all_classification_experiments.py](all_classification_experiments.py) and [all_regression_experiments.py](all_regression_experiments.py).
+
+## Further information and dependencies
+
+This package also implemets:
 
 * Adversarial Debiasing [2]: our implementation is based on https://github.com/equialgo/fairness-in-ml
 * HGR [3]: where our code is based on https://github.com/criteo-research/continuous-fairness
@@ -47,10 +53,6 @@ The development version is available here on github:
 ```bash
 git clone https://github.com/yromano/fair_dummies.git
 ```
-
-## Usage
-
-Please refer to [synthetic_experiment.ipynb](synthetic_experiment.ipynb) for basic usage. Comparisons to competitive methods and additional usage examples of this package can be found in [all_classification_experiments.py](all_classification_experiments.py) and [all_regression_experiments.py](all_regression_experiments.py).
 
 ## Reproducible Research
 
