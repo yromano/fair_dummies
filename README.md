@@ -12,7 +12,7 @@ Lastly, we demonstrate how to incorporate techniques for equitable uncertainty q
 
 The implementation of [1] is self-contained and written in python.
 
-This package also implements
+This package also implemets (see dependencies):
 
 * Adversarial Debiasing [2]: our implementation is based on https://github.com/equialgo/fairness-in-ml
 * HGR [3]: where our code is based on https://github.com/criteo-research/continuous-fairness
@@ -22,6 +22,7 @@ This package also implements
 [3] J. Mary, C. Calauzènes, and N. El Karoui, ["Fairness-aware learning for continuous attributes and treatments."](http://proceedings.mlr.press/v97/mary19a/mary19a.pdf) ICML, 2019
 
 Dependencies:
+
 * Conformalized quantile regression (CQR) [4] and equalized coverage [5] frameworks for constructing distribusion-free prediction intervals/sets. Code is avaialable at https://github.com/yromano/cqr
 * nonconformist package available at https://github.com/donlnz/nonconformist
 
