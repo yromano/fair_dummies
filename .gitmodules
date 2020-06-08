@@ -1,0 +1,3 @@
+[submodule "cqr"]
+	path = cqr
+	url = https://github.com/yromano/cqr
