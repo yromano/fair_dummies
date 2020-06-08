@@ -31,7 +31,7 @@ def density_estimation(Y, A, Y_test=[]):
     return p_success, p_success_test
 
 
-# Define linear regression model
+# Define linear model
 class linear_model(torch.nn.Module):
     def __init__(self,
                  in_shape=1,
@@ -50,14 +50,14 @@ class linear_model(torch.nn.Module):
     def forward(self, x):
         return torch.squeeze(self.base_model(x))
 
-# Define deep regression model
+# Define deep neural net model for classification
 class deep_model(torch.nn.Module):
     def __init__(self,
                  in_shape=1,
                  out_shape=1):
         super().__init__()
         self.in_shape = in_shape
-        self.dim_h = 64 #in_shape*10
+        self.dim_h = 64
         self.dropout = 0.5
         self.out_shape = out_shape
         self.build_model()
@@ -74,7 +74,7 @@ class deep_model(torch.nn.Module):
         return torch.squeeze(self.base_model(x))
 
 
-# Define deep regression model
+# Define deep model for regression
 class deep_reg_model(torch.nn.Module):
     def __init__(self,
                  in_shape=1,
@@ -143,7 +143,7 @@ def pytorch_standard_scaler(x):
     x /= s
     return x
 
-# fit a neural netwok on a given data, used by the fair dummies test 
+# fit a neural netwok on a given data, used by the fair dummies test
 class GeneralLearner:
 
     def __init__(self,
@@ -157,19 +157,19 @@ class GeneralLearner:
 
         # input dim
         self.in_shape = in_shape
-        
+
         # output dim
         self.out_shape = out_shape
-        
+
         # Data normalization
         self.X_scaler = StandardScaler()
 
         # learning rate
         self.lr = lr
-        
+
         # number of epochs
         self.epochs = epochs
-        
+
         # cost to minimize
         self.cost_func = cost_func
 
@@ -184,7 +184,7 @@ class GeneralLearner:
 
         # optimizer
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
-        
+
         # minibatch size
         self.batch_size = batch_size
 
@@ -326,7 +326,7 @@ def fair_dummies_test_regression(Yhat_cal,
         test_i.append(p_val)
 
 
-    print("CRT (regression score), avg p-value:", np.mean(test_i)) # should be uniform under ind.
+    print("Fair dummies test (regression score), avg p-value:", np.mean(test_i)) # should be uniform under ind.
 
     out = test_i[0]
     if return_vec:
@@ -412,6 +412,6 @@ def fair_dummies_test_classification(Yhat_cal,
         test_i.append(p_val)
 
 
-    print("CRT (regression score), avg p-value:", np.mean(test_i)) # should be uniform under ind.
+    print("Fair dummies test (classification score), avg p-value:", np.mean(test_i)) # should be uniform under ind.
 
     return test_i[0]

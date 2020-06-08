@@ -1,3 +1,7 @@
+# Run a regression experiment
+# implements model fitting with equalized odds and demonstrates
+# how to use equlized coverage for unbiased uncertainty estimation
+
 # We use the CQR package, provided in https://github.com/yromano/cqr
 # We also rely on the nonconformist package, available at
 # https://github.com/donlnz/nonconformist
@@ -104,7 +108,7 @@ def run_experiment(cur_test_method,
 
     avg_p_val = np.zeros(num_experiments)
     mse = np.zeros(num_experiments)
-    
+
 
     for i in range(num_experiments):
 
@@ -287,7 +291,7 @@ def run_experiment(cur_test_method,
         print("Length 0 = " + str(avg_length_0[i]))
         print("Length 1 = " + str(avg_length_1[i]))
         print("MSE = " + str(mse[i]))
-    
+
 
         print("p_val = " + str(p_val))
         sys.stdout.flush()

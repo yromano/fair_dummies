@@ -1,3 +1,7 @@
+# Run a classification experiment
+# implements model fitting with equalized odds and demonstrates
+# how to use equlized coverage for unbiased uncertainty estimation
+
 # We rely on the nonconformist package and CQR package, available at
 # https://github.com/donlnz/nonconformist
 # https://github.com/yromano/cqr
@@ -10,16 +14,15 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd() + '/others/third_party/
 
 base_path = os.getcwd() + '/data/'
 
-
 import torch
 import random
 import get_dataset
 import numpy as np
 import pandas as pd
+from others import adv_debiasing
+from others import continuous_fairness
 from fair_dummies import utility_functions
 from fair_dummies import fair_dummies_learning
-from others import continuous_fairness
-from others import adv_debiasing
 
 from nonconformist.nc import ClassifierNc
 from nonconformist.cp import IcpClassifier
@@ -114,15 +117,15 @@ def run_experiment(cur_test_method,
     batch_size = cur_batch_size
 
     # step size to minimize loss
-    lr_loss = cur_lr_loss #0.01 # 0.001
+    lr_loss = cur_lr_loss
 
-    # step size used to fit GAN's classifier
-    lr_dis = cur_lr_dis #0.01 # 0.001
+    # step size used to fit bianry classifier (discriminator)
+    lr_dis = cur_lr_dis
 
     # inner epochs to fit loss
     loss_steps = cur_loss_steps
 
-    # inner epochs to fit GAN's classifier
+    # inner epochs to fit binary classifier (discriminator)
     dis_steps = cur_dis_steps
 
     # total number of epochs
@@ -307,17 +310,17 @@ def run_experiment(cur_test_method,
         avg_p_val[i] = p_val
 
         pred_error[i] = 1.0-utility_functions.compute_acc_numpy(Yhat_out_test, Y_test)
-        
+
         print("experiment = " + str(i+1))
         print("Coverage 0 = " + str(avg_coverage_0[i]))
         print("Coverage 1 = " + str(avg_coverage_1[i]))
         print("Length 0 = " + str(avg_length_0[i]))
         print("Length 1 = " + str(avg_length_1[i]))
         print("Prediction Error = " + str(pred_error[i]))
-        
-        
+
+
         print("p_val = " + str(p_val))
-        
+
         sys.stdout.flush()
 
 

@@ -1,18 +1,25 @@
-
+# Code to reproduce the classification experiments in the paper
 
 from fair_dummies.cf_classification import run_experiment
 
+# parameters are tuned on training set
+# choose test=True to evaluate training performance
+
 test = True
 
-if test:    
+if test:
+    # test seed
     random_state_train_test = 123456789
+    # repeat the experiments for num_experiments times
     num_experiments = 20
 else:
-    random_state_train_test = 0 
+    # train seed
+    random_state_train_test = 0
+    # repeat the experiments for num_experiments times
     num_experiments = 10
 
 
-    
+
 test_methods =   []
 dataset_names =  []
 batch_size =     []
@@ -22,6 +29,10 @@ mu_val =         []
 second_scale =   []
 epochs =         []
 model_type =     []
+
+################################################################################
+## Fairness-unaware baseline methods
+################################################################################
 
 test_methods +=  ['Baseline']
 dataset_names += ['nursery']
@@ -45,7 +56,9 @@ model_type +=    ["deep_model"]
 
 
 ################################################################################
-## HGR EO Penalty
+# HGR EO Penalty
+# paper: Fairness-Aware Learning for Continuous Attributes and Treatments,
+# J. Mary, C. Calauzènes, N. El Karoui, ICML 2019
 ################################################################################
 
 
@@ -56,7 +69,7 @@ lr +=            [0.001]
 steps +=         [1]
 mu_val +=        [0.98]
 second_scale +=  [0.0]
-epochs +=        [50] 
+epochs +=        [50]
 model_type +=    ["linear_model"]
 
 
@@ -67,12 +80,15 @@ lr +=            [0.001]
 steps +=         [1]
 mu_val +=        [0.98]
 second_scale +=  [0.0]
-epochs +=        [50] 
+epochs +=        [50]
 model_type +=    ["deep_model"]
 
 
 ###############################################################################
-# ADV EO Penalty
+# Adversarial Debiasing EO Penalty
+# paper: Mitigating Unwanted Biases with Adversarial Learning,
+# Zhang, B.H., Lemoine, B. and Mitchell, M., AAAI/ACM Conference on AI, Ethics,
+# and Society, 2018
 ###############################################################################
 
 
@@ -98,7 +114,9 @@ epochs +=        [200]
 model_type +=    ["linear_model"]
 
 ################################################################################
-## Equi EO Penalty
+# Fair Dummies EO Penalty (proposed method)
+# Paper: Achieving Equalized Odds by Resampling Sensitive Attributes,
+# Y. Romano, S. Bates, and E. J. Candès, 2020
 ################################################################################
 
 
@@ -109,7 +127,7 @@ lr +=            [0.5]
 steps +=         [1] #60
 mu_val +=        [0.99999]
 second_scale +=  [0.01]
-epochs +=        [50] 
+epochs +=        [50]
 model_type +=    ["linear_model"]
 
 
@@ -120,24 +138,24 @@ lr +=            [0.5]
 steps +=         [2]
 mu_val +=        [0.9]
 second_scale +=  [0.00001]
-epochs +=        [50] 
+epochs +=        [50]
 model_type +=    ["deep_model"]
 
 
-for exp_id in range(8):                                      
+for exp_id in range(8):
     cur_test_method = test_methods[exp_id]
     cur_dataset_name = dataset_names[exp_id]
     cur_batch_size = batch_size[exp_id]
-    cur_lr_loss = lr[exp_id] 
+    cur_lr_loss = lr[exp_id]
     cur_lr_dis = lr[exp_id]
     cur_loss_steps = steps[exp_id]
     cur_dis_steps = steps[exp_id]
     cur_mu_val = mu_val[exp_id]
     cur_epochs = epochs[exp_id]
     cur_random_state = random_state_train_test
-    cur_model_type = model_type[exp_id]    
+    cur_model_type = model_type[exp_id]
     cur_second_scale = second_scale[exp_id]
-    
+
     run_experiment(cur_test_method,
                    cur_dataset_name,
                    cur_batch_size,

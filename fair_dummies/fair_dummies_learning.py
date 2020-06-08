@@ -35,7 +35,7 @@ class PandasDataSet(TensorDataset):
             df = df.to_frame('dummy')
         return torch.from_numpy(df.values).float()
 
-# defining discriminator class
+# defining discriminator class (for regression)
 class reg_discriminator(nn.Module):
 
     def __init__(self, inp, out=1):
@@ -52,6 +52,7 @@ class reg_discriminator(nn.Module):
         x = self.net(x)
         return x
 
+# defining discriminator class (for classification)
 class class_discriminator(nn.Module):
 
     def __init__(self, out_dim, n_y, n_hidden=32):
@@ -70,22 +71,6 @@ class class_discriminator(nn.Module):
         return torch.sigmoid(self.network(x))
 
 
-def pretrain_adversary(dis, model, data_loader, optimizer, criterion, lambdas):
-    for x, y, a, at in data_loader:
-        yhat = model(x).detach()
-        dis.zero_grad()
-        if len(yhat.size())==1:
-            yhat = yhat.unsqueeze(dim=1)
-        real = torch.cat((yhat,at,y),1)
-        fake = torch.cat((yhat,a,y),1)
-        in_dis = torch.cat((real, fake), 0)
-        out_dis = dis(in_dis)
-        labels = torch.cat((torch.ones(real.shape[0],1), torch.zeros(fake.shape[0],1)), 0)
-        loss = (criterion(out_dis, labels) * lambdas).mean()
-        loss.backward()
-        optimizer.step()
-    return dis
-
 def pretrain_adversary_fast_loader(dis, model, x, y, a, at, optimizer, criterion, lambdas):
     yhat = model(x).detach()
     dis.zero_grad()
@@ -100,6 +85,21 @@ def pretrain_adversary_fast_loader(dis, model, x, y, a, at, optimizer, criterion
     loss.backward()
     optimizer.step()
     return dis
+
+def pretrain_adversary(dis, model, data_loader, optimizer, criterion, lambdas):
+    for x, y, a, at in data_loader:
+        dis = pretrain_adversary_fast_loader(dis,
+                                             model,
+                                             x,
+                                             y,
+                                             a,
+                                             at,
+                                             optimizer,
+                                             criterion,
+                                             lambdas)
+    return dis
+
+
 
 def pretrain_classifier(model, data_loader, optimizer, criterion):
     for x, y, _, _ in data_loader:
@@ -128,9 +128,9 @@ def pretrain_regressor_fast_loader(model, x, y, optimizer, criterion):
     return model
 
 
-def train(model, dis, data_loader, pred_loss, dis_loss,
-          clf_optimizer, adv_optimizer, lambdas, second_moment_scaling,
-          dis_steps, loss_steps, num_classes):
+def train_classifier(model, dis, data_loader, pred_loss, dis_loss,
+                     clf_optimizer, adv_optimizer, lambdas, second_moment_scaling,
+                     dis_steps, loss_steps, num_classes):
 
     # Train adversary
     for i in range(dis_steps):
@@ -181,52 +181,47 @@ def train(model, dis, data_loader, pred_loss, dis_loss,
     return model, dis
 
 
-def train_regressor(model, dis, data_loader, pred_loss, dis_loss,
-                    clf_optimizer, adv_optimizer, lambdas, second_moment_scaling,
-                    dis_steps, loss_steps):
+def inner_train_adversary_regression(model, dis, x, y, a, at, pred_loss, dis_loss,
+                                     clf_optimizer, adv_optimizer, lambdas,
+                                     second_moment_scaling, dis_steps, loss_steps):
+    yhat = model(x)
+    dis.zero_grad()
+    if len(yhat.size())==1:
+        yhat = yhat.unsqueeze(dim=1)
+    real = torch.cat((yhat,at,y),1)
+    fake = torch.cat((yhat,a,y),1)
+    in_dis = torch.cat((real, fake), 0)
+    out_dis = dis(in_dis)
+    labels = torch.cat((torch.ones(real.shape[0],1), torch.zeros(fake.shape[0],1)), 0)
+    loss_adv = (dis_loss(out_dis, labels) * lambdas).mean()
+    loss_adv.backward()
+    adv_optimizer.step()
+    return dis
 
-    # Train adversary
-    for i in range(dis_steps):
-        for x, y, a, at in data_loader:
-            yhat = model(x)
-            dis.zero_grad()
-            if len(yhat.size())==1:
-                yhat = yhat.unsqueeze(dim=1)
-            real = torch.cat((yhat,at,y),1)
-            fake = torch.cat((yhat,a,y),1)
-            in_dis = torch.cat((real, fake), 0)
-            out_dis = dis(in_dis)
-            labels = torch.cat((torch.ones(real.shape[0],1), torch.zeros(fake.shape[0],1)), 0)
-            loss_adv = (dis_loss(out_dis, labels) * lambdas).mean()
-            loss_adv.backward()
-            adv_optimizer.step()
+def inner_train_model_regression(model, dis, x, y, a, at, pred_loss, dis_loss,
+                                 clf_optimizer, adv_optimizer, lambdas, second_moment_scaling,
+                                 dis_steps, loss_steps):
+    yhat = model(x)
+    if len(yhat.size())==1:
+        yhat = yhat.unsqueeze(dim=1)
 
-    # Train predictor
-    for i in range(loss_steps):
-        for x, y, a, at in data_loader:
-            yhat = model(x)
-            if len(yhat.size())==1:
-                yhat = yhat.unsqueeze(dim=1)
+    fake = torch.cat((yhat,a,y),1)
+    real = torch.cat((yhat,at,y),1)
 
-            fake = torch.cat((yhat,a,y),1)
-            real = torch.cat((yhat,at,y),1)
+    loss_second_moment = covariance_diff_biased(fake, real)
 
-            loss_second_moment = covariance_diff_biased(fake, real)
-
-            in_dis = torch.cat((real, fake), 0)
-            out_dis = dis(in_dis)
-            model.zero_grad()
-            out_dis = dis(in_dis)
-            labels = torch.cat((torch.zeros(real.shape[0],1), torch.ones(fake.shape[0],1)), 0)
-            loss_adv = (dis_loss(out_dis, labels) * lambdas).mean()
-            clf_loss = (1.0-lambdas)*pred_loss(yhat.squeeze(), y.squeeze())
-            clf_loss += (dis_loss(dis(in_dis), labels) * lambdas).mean()
-            clf_loss += lambdas*second_moment_scaling*loss_second_moment
-            clf_loss.backward()
-            clf_optimizer.step()
-
-    return model, dis
-
+    in_dis = torch.cat((real, fake), 0)
+    out_dis = dis(in_dis)
+    model.zero_grad()
+    out_dis = dis(in_dis)
+    labels = torch.cat((torch.zeros(real.shape[0],1), torch.ones(fake.shape[0],1)), 0)
+    loss_adv = (dis_loss(out_dis, labels) * lambdas).mean()
+    clf_loss = (1.0-lambdas)*pred_loss(yhat.squeeze(), y.squeeze())
+    clf_loss += (dis_loss(dis(in_dis), labels) * lambdas).mean()
+    clf_loss += lambdas*second_moment_scaling*loss_second_moment
+    clf_loss.backward()
+    clf_optimizer.step()
+    return model
 
 def train_regressor_fast_loader(model, dis, x, y, a, at, pred_loss, dis_loss,
                                 clf_optimizer, adv_optimizer, lambdas, second_moment_scaling,
@@ -234,41 +229,44 @@ def train_regressor_fast_loader(model, dis, x, y, a, at, pred_loss, dis_loss,
 
     # Train adversary
     for i in range(dis_steps):
-        yhat = model(x)
-        dis.zero_grad()
-        if len(yhat.size())==1:
-            yhat = yhat.unsqueeze(dim=1)
-        real = torch.cat((yhat,at,y),1)
-        fake = torch.cat((yhat,a,y),1)
-        in_dis = torch.cat((real, fake), 0)
-        out_dis = dis(in_dis)
-        labels = torch.cat((torch.ones(real.shape[0],1), torch.zeros(fake.shape[0],1)), 0)
-        loss_adv = (dis_loss(out_dis, labels) * lambdas).mean()
-        loss_adv.backward()
-        adv_optimizer.step()
+        dis = inner_train_adversary_regression(model, dis, x, y, a, at,
+                                               pred_loss, dis_loss,
+                                               clf_optimizer, adv_optimizer,
+                                               lambdas, second_moment_scaling,
+                                               dis_steps, loss_steps)
 
     # Train predictor
     for i in range(loss_steps):
-        yhat = model(x)
-        if len(yhat.size())==1:
-            yhat = yhat.unsqueeze(dim=1)
+        model = inner_train_model_regression(model, dis, x, y, a, at, pred_loss,
+                                             dis_loss, clf_optimizer,
+                                             adv_optimizer, lambdas,
+                                             second_moment_scaling,
+                                             dis_steps, loss_steps)
 
-        fake = torch.cat((yhat,a,y),1)
-        real = torch.cat((yhat,at,y),1)
+    return model, dis
 
-        loss_second_moment = covariance_diff_biased(fake, real)
 
-        in_dis = torch.cat((real, fake), 0)
-        out_dis = dis(in_dis)
-        model.zero_grad()
-        out_dis = dis(in_dis)
-        labels = torch.cat((torch.zeros(real.shape[0],1), torch.ones(fake.shape[0],1)), 0)
-        loss_adv = (dis_loss(out_dis, labels) * lambdas).mean()
-        clf_loss = (1.0-lambdas)*pred_loss(yhat.squeeze(), y.squeeze())
-        clf_loss += (dis_loss(dis(in_dis), labels) * lambdas).mean()
-        clf_loss += lambdas*second_moment_scaling*loss_second_moment
-        clf_loss.backward()
-        clf_optimizer.step()
+def train_regressor(model, dis, data_loader, pred_loss, dis_loss,
+                    clf_optimizer, adv_optimizer, lambdas, second_moment_scaling,
+                    dis_steps, loss_steps):
+
+    # Train adversary
+    for i in range(dis_steps):
+        for x, y, a, at in data_loader:
+            dis = inner_train_adversary_regression(model, dis, x, y, a, at,
+                                                   pred_loss, dis_loss,
+                                                   clf_optimizer, adv_optimizer,
+                                                   lambdas, second_moment_scaling,
+                                                   dis_steps, loss_steps)
+
+    # Train predictor
+    for i in range(loss_steps):
+        for x, y, a, at in data_loader:
+            model = inner_train_model_regression(model, dis, x, y, a, at, pred_loss,
+                                                 dis_loss, clf_optimizer,
+                                                 adv_optimizer, lambdas,
+                                                 second_moment_scaling,
+                                                 dis_steps, loss_steps)
 
     return model, dis
 
@@ -374,18 +372,18 @@ class EquiClassLearner:
             train_data = PandasDataSet(X_train, y_train, Z_train, Zt_train)
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True, drop_last=True)
 
-            self.model, self.dis = train(self.model,
-                                       self.dis,
-                                       train_loader,
-                                       self.pred_loss,
-                                       self.dis_loss,
-                                       self.clf_optimizer,
-                                       self.adv_optimizer,
-                                       self.lambdas,
-                                       self.second_moment_scaling,
-                                       self.dis_steps,
-                                       self.loss_steps,
-                                       self.num_classes)
+            self.model, self.dis = train_classifier(self.model,
+                                                    self.dis,
+                                                    train_loader,
+                                                    self.pred_loss,
+                                                    self.dis_loss,
+                                                    self.clf_optimizer,
+                                                    self.adv_optimizer,
+                                                    self.lambdas,
+                                                    self.second_moment_scaling,
+                                                    self.dis_steps,
+                                                    self.loss_steps,
+                                                    self.num_classes)
 
     def predict(self,X):
         X = X[:,1:]
@@ -418,13 +416,14 @@ class EquiRegLearner:
                  model_type,
                  lambda_vec,
                  second_moment_scaling,
-                 out_shape):
+                 out_shape,
+                 use_standardscaler=True):
 
         self.lr = lr
         self.batch_size = batch_size
         self.in_shape = in_shape
         self.out_shape = out_shape
-
+        self.use_standardscaler = use_standardscaler
 
         self.model_type = model_type
         if self.model_type == "deep_model":
@@ -476,15 +475,16 @@ class EquiRegLearner:
         Z_train = pd.DataFrame(data=orig_Z)
         p_success, dummy = utility_functions.density_estimation(Y, orig_Z)
 
-        self.scaler_x.fit(X_train)
-        X_train = X_train.pipe(self.scale_df, self.scaler_x)
+        if self.use_standardscaler:
+            self.scaler_x.fit(X_train)
+            X_train = X_train.pipe(self.scale_df, self.scaler_x)
 
-        self.scaler_z.fit(Z_train)
-        Z_train = Z_train.pipe(self.scale_df, self.scaler_z)
+            self.scaler_z.fit(Z_train)
+            Z_train = Z_train.pipe(self.scale_df, self.scaler_z)
 
-        if self.out_shape==1:
-            self.scaler_y.fit(y_train)
-            y_train = y_train.pipe(self.scale_df, self.scaler_y)
+            if self.out_shape==1:
+                self.scaler_y.fit(y_train)
+                y_train = y_train.pipe(self.scale_df, self.scaler_y)
 
         x = torch.from_numpy(X_train.values).float()
         y = torch.from_numpy(y_train.values).float()
@@ -494,8 +494,9 @@ class EquiRegLearner:
             random_array = np.random.uniform(low=0.0, high=1.0, size=orig_Z.shape)
             Z_tilde = (random_array < p_success).astype(float)
             Zt_train = pd.DataFrame(data=Z_tilde)
-            self.scaler_zt.fit(Zt_train)
-            Zt_train = Zt_train.pipe(self.scale_df, self.scaler_zt)
+            if self.use_standardscaler:
+                self.scaler_zt.fit(Zt_train)
+                Zt_train = Zt_train.pipe(self.scale_df, self.scaler_zt)
             train_data = PandasDataSet(X_train, y_train, Z_train, Zt_train)
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True, drop_last=False)
             if fast_loader:
@@ -516,8 +517,9 @@ class EquiRegLearner:
             random_array = np.random.uniform(low=0.0, high=1.0, size=orig_Z.shape)
             Z_tilde = (random_array < p_success).astype(float)
             Zt_train = pd.DataFrame(data=Z_tilde)
-            self.scaler_zt.fit(Zt_train)
-            Zt_train = Zt_train.pipe(self.scale_df, self.scaler_zt)
+            if self.use_standardscaler:
+                self.scaler_zt.fit(Zt_train)
+                Zt_train = Zt_train.pipe(self.scale_df, self.scaler_zt)
             train_data = PandasDataSet(X_train, y_train, Z_train, Zt_train)
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True, drop_last=False)
             if fast_loader:
@@ -543,8 +545,9 @@ class EquiRegLearner:
             random_array = np.random.uniform(low=0.0, high=1.0, size=orig_Z.shape)
             Z_tilde = (random_array < p_success).astype(float)
             Zt_train = pd.DataFrame(data=Z_tilde)
-            self.scaler_zt.fit(Zt_train)
-            Zt_train = Zt_train.pipe(self.scale_df, self.scaler_zt)
+            if self.use_standardscaler:
+                self.scaler_zt.fit(Zt_train)
+                Zt_train = Zt_train.pipe(self.scale_df, self.scaler_zt)
             train_data = PandasDataSet(X_train, y_train, Z_train, Zt_train)
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True, drop_last=False)
             if fast_loader:
@@ -578,15 +581,19 @@ class EquiRegLearner:
     def predict(self,X):
         X = X[:,1:]
         X_test = pd.DataFrame(data=X)
-        X_test = X_test.pipe(self.scale_df, self.scaler_x)
+
+        if self.use_standardscaler:
+            X_test = X_test.pipe(self.scale_df, self.scaler_x)
 
         test_data = PandasDataSet(X_test)
 
         with torch.no_grad():
             Yhat = self.model(test_data.tensors[0]).squeeze().detach().numpy()
 
-        if self.out_shape==1:
+        if self.out_shape==1 and self.use_standardscaler:
             out = self.scaler_y.inverse_transform(Yhat.reshape(-1, 1)).squeeze()
+        elif self.out_shape==1:
+            out = Yhat.squeeze()
         else:
             out = 0*Yhat
             out[:,0] = np.min(Yhat,axis=1)
