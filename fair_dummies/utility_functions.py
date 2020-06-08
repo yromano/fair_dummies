@@ -326,7 +326,7 @@ def fair_dummies_test_regression(Yhat_cal,
         test_i.append(p_val)
 
 
-    print("Fair dummies test (regression score), avg p-value:", np.mean(test_i)) # should be uniform under ind.
+    print("Fair dummies test (regression score), p-value:", np.mean(test_i)) # should be uniform under ind.
 
     out = test_i[0]
     if return_vec:
@@ -412,6 +412,6 @@ def fair_dummies_test_classification(Yhat_cal,
         test_i.append(p_val)
 
 
-    print("Fair dummies test (classification score), avg p-value:", np.mean(test_i)) # should be uniform under ind.
+    print("Fair dummies test (classification score), p-value:", np.mean(test_i)) # should be uniform under ind.
 
     return test_i[0]
