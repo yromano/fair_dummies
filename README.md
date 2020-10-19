@@ -6,7 +6,7 @@ To rigorously evaluate fitted models, we also implement a formal hypothesis test
 
 Lastly, we demonstrate how to incorporate techniques for equitable uncertainty quantification---unbiased for each protected group---to precisely communicate the results of the data analysis.
 
-[1] Y. Romano, S. Bates, and E. J. Candès, “Achieving Equalized Odds by Resampling Sensitive Attributes.” 2020.
+[1] Y. Romano, S. Bates, and E. J. Candès, “Achieving Equalized Odds by Resampling Sensitive Attributes.” Advances in Neural Information Processing Systems (NeurIPS), 2020.
 
 ## Getting Started
 
