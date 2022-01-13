@@ -5,6 +5,7 @@ import torch.nn as nn
 from sklearn.neighbors import KernelDensity
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
+from scipy.sparse import csr_matrix
 
 # Estimate the distribusion of P{A|Y}
 def density_estimation(Y, A, Y_test=[]):
@@ -359,8 +360,13 @@ def fair_dummies_test_classification(Yhat_cal,
     Yhat_cal_score = np.array([classification_score(Yhat_cal[i],Y_cal[i]) for i in range(Yhat_cal.shape[0])], dtype = float)
     Yhat_score = np.array([classification_score(Yhat[i],Y[i]) for i in range(Y.shape[0])], dtype = float)
 
-    Y_cal = pd.get_dummies(Y_cal).values.astype(float)
-    Y = pd.get_dummies(Y).values.astype(float)
+    def get_dummies(labels):
+        num_datapoints = len(labels)
+        row_ind = np.arange(num_datapoints)
+        return csr_matrix((np.ones(num_datapoints), (row_ind, labels)), dtype=float).todense()
+
+    Y_cal = get_dummies(Y_cal)
+    Y = get_dummies(Y)
 
     test_i = []
     err_func = nn.BCELoss()
